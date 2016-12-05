@@ -17,6 +17,8 @@ function loadingSound(soundName, url){
 
 };
 
+
+
 function loadingAllSounds(){
 
 	backgroundMusic = loadingSound(backgroundMusic, 'sounds/BG.mp3');
@@ -28,6 +30,8 @@ function loadingAllSounds(){
 
 }
 
+
+
 // Stop the old music now playing and play new music 
 function playNewMusic(newMusic, oldMusic){
 	if(!newMusic.played){
@@ -37,6 +41,7 @@ function playNewMusic(newMusic, oldMusic){
       newMusic.played=true;
     };
 };
+
 
 
 function playAllMusic(character){

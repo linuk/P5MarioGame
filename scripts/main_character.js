@@ -7,7 +7,7 @@
 var mario;
 var bg;
 var s,platform2;
-var objects,clouds,mountains,mushrooms,pipes,platforms,coins;
+var bricks,clouds,mountains,enemyMushrooms,pipes,platforms,coins;
 var gravityForEnemy=10;
 var game_state;
 var marioFont,timeScores=0;
@@ -20,39 +20,31 @@ var left='LEFT_ARROW';
 var right='RIGHT_ARROW';
 
 
-function MarioAnimation(){
-  mario=createSprite(startingPoint, 0, startingPoint, 0.30);
-  mario.addAnimation("stand",'imgs/mario/mario06.png');
-  mario.addAnimation("move",'imgs/mario/mario01.png','imgs/mario/mario03.png');
-  mario.addAnimation("crouch",'imgs/mario/mario18.png');
-  mario.addAnimation("jump",'imgs/mario/mario05.png');
-  mario.addAnimation("dead",'imgs/mario/mario24.png');
-
-}
 
 
 //initialize
 function setupInstialize(character){
+	frameRate(120);
+	
 	character.scale=0.35;
-	objects.displace(objects);
-  platforms.displace(platforms);
+	bricks.displace(bricks);
+	platforms.displace(platforms);
   
-  coins.displace(coins);
-  coins.displace(platforms);
-  coins.collide(pipes);
-  coins.displace(objects);
-  	
-  //while killing 	
-  character["killing"]=0;
-  character["kills"]=0;
-  character["live"]=true;
+	coins.displace(coins);
+	coins.displace(platforms);
+	coins.collide(pipes);
+	coins.displace(bricks);
+		
+	//while killing 	
+	character["killing"]=0;
+	character["kills"]=0;
+	character["live"]=true;
 	character["liveNumber"]=initialLifes;
 	character["status"]='live';
-  character["coins"]=0;
+	character["coins"]=0;
 
 	clouds.forEach(function(element){
 		element.scale=random(1,1.5);
-		// element.setCollider('rectangle',0,0,200,150)
 	})
 }
 
@@ -69,8 +61,8 @@ function drawInstialize(){
   mario.velocity.x=0;
   mario.maxSpeed=20;
   pipes.displace(pipes);
-  mushrooms.displace(mushrooms);
-  mushrooms.collide(pipes);
+  enemyMushrooms.displace(enemyMushrooms);
+  enemyMushrooms.collide(pipes);
   clouds.displace(clouds);
 
 
@@ -83,9 +75,9 @@ function drawInstialize(){
   })
 
   if(mario.live){
-    objects.displace(mario);
+    bricks.displace(mario);
     pipes.displace(mario);
-    mushrooms.displace(mario);
+    enemyMushrooms.displace(mario);
     platforms.displace(mario);
   }
   mario["standOnObj"]=false;
@@ -110,7 +102,7 @@ function getCoins(coin,character){
     
 function coinVanish(coin){
   if(coin.get){
-    coin.position.x=random(50,screenX)+screenX;
+    coin.position.x=random(50,innerGameStatus.screenX)+innerGameStatus.screenX;
     coin.get=false;
   };
 }
@@ -126,12 +118,12 @@ function coinVanish(coin){
 function positionOfCharacter(character){
   //not on the platform
   if(!character.standOnObj&&character.live){
-    //see if standing on objects
+    //see if standing on bricks
     platforms.forEach(function(element){
       standOnObjs(character,element);
     });
 
-    objects.forEach(function(element){
+    bricks.forEach(function(element){
       standOnObjs(character,element);
     });
 
@@ -140,10 +132,10 @@ function positionOfCharacter(character){
     });
 
     if(character.standOnObj&&character.live){
-    	//standing on objects
+    	//standing on bricks
 	   	jumping(character);
     }else if(character.live){
-	    //not standing on objects
+	    //not standing on bricks
     	falling(character);
     }
 
@@ -155,8 +147,8 @@ function positionOfCharacter(character){
     coinVanish(element);
   });
 
-  //mushrooms event
-  mushrooms.forEach(function(element){
+  //enemyMushrooms event
+  enemyMushrooms.forEach(function(element){
     StepOnEnemy(character,element);
     die(mario,element);
   })
@@ -169,7 +161,7 @@ function positionOfCharacter(character){
 
 /* Auto control character */
 function autoControl(character){
-    character.velocity.x+=moveSpeed;
+    character.velocity.x+=innerGameStatus.moveSpeed;
     character.changeAnimation('move');
     character.mirrorX(1);
 }
@@ -177,13 +169,13 @@ function autoControl(character){
 /* Manual control character */
 function manualControl(character){
   if(keyDown(left)&&character.live){
-    character.velocity.x-=moveSpeed;
+    character.velocity.x-=innerGameStatus.moveSpeed;
     character.changeAnimation('move');
     character.mirrorX(-1);
   }
 
   if(keyDown(right)&&character.live){
-    character.velocity.x+=moveSpeed;
+    character.velocity.x+=innerGameStatus.moveSpeed;
     character.changeAnimation('move');
     character.mirrorX(1);
   }
@@ -196,7 +188,7 @@ function manualControl(character){
 /* Movements of character */
 function jumping(character){
 	if( (keyWentDown(up)&&character.live) || (touchIsDown&&character.live) ){
-		character.velocity.y+=jump;
+		character.velocity.y+=innerGameStatus.jump;
 		jumpSound.play();
 	}
 }
@@ -206,7 +198,7 @@ function jumping(character){
 
 /* Movements of character */
 function falling(character){
-	character.velocity.y += gravity;
+	character.velocity.y += innerGameStatus.gravity;
   character.changeAnimation('jump');
 }
 
@@ -269,10 +261,10 @@ function StepOnEnemy(obj1,obj2){
 		obj2.live=false;
     obj1.killing=30;
     obj1.kills++;
-    if(obj1.velocity.y>=jump*0.8){
-      obj1.velocity.y=jump*0.8;
+    if(obj1.velocity.y>=innerGameStatus.jump*0.8){
+      obj1.velocity.y=innerGameStatus.jump*0.8;
     }else{
-      obj1.velocity.y+=jump*0.8;
+      obj1.velocity.y+=innerGameStatus.jump*0.8;
     }
 
    stompSound.play(); 
@@ -323,19 +315,13 @@ function reviveAfterMusic(character){
 function dontGetOutOfScreen(character){
   
   //die if drop in the holes 
-  if(character.position.y>screenY&&character.live){
+  if(character.position.y>innerGameStatus.screenY&&character.live){
   	character.live=false;
     if(character.liveNumber){ character.liveNumber--;}
   }
 
-   
-  // if(character.position.x<character.width*0.5&&character.touching.right){
-  //   character.live=false;
-  //   if(character.liveNumber){ character.liveNumber--;}
-  // }
-
-  if(character.position.x>screenX-(character.width*0.5)){
-  	character.position.x=screenX-(character.width*0.5);
+  if(character.position.x>innerGameStatus.screenX-(character.width*0.5)){
+  	character.position.x=innerGameStatus.screenX-(character.width*0.5);
   }else if(character.position.x<character.width*0.5){
     if(character==mario){
       character.position.x=character.width*0.5;
@@ -367,9 +353,9 @@ function enemys(enemys){
 
 function stateOfEnemy(enemy){
 	
-  if (enemy.live==false||enemy.position.y>screenY+50){
-    enemy.position.x=random(screenX*1.5,2*screenX+50);
-    enemy.position.y=random(screenY*0.35,screenY*0.75);
+  if (enemy.live==false||enemy.position.y>innerGameStatus.screenY+50){
+    enemy.position.x=random(innerGameStatus.screenX*1.5,2*innerGameStatus.screenX+50);
+    enemy.position.y=random(innerGameStatus.screenY*0.35,innerGameStatus.screenY*0.75);
     enemy.live=true;
   }
 }
@@ -378,7 +364,7 @@ function positionOfEnemy(enemy){
 	enemy["standOnObj"] = false;
 
 	platforms.forEach(function(element){ enemyStandOnObjs(enemy, element); });
-	objects.forEach(function(element){ enemyStandOnObjs(enemy, element);});
+	bricks.forEach(function(element){ enemyStandOnObjs(enemy, element);});
   pipes.forEach(function(element){ enemyStandOnObjs(enemy, element); })
 	
 	if(!enemy.standOnObj){ enemy.position.y+=gravityForEnemy; };
@@ -418,13 +404,13 @@ function enemyStandOnObjs(obj1,obj2){
 
 function moveEnvironment(character){
   
-  var environmentScrollingSpeed=moveSpeed*0.5+character.scores*0.01; 
+  var environmentScrollingSpeed=innerGameStatus.moveSpeed*0.5+character.scores*0.01; 
   environmentScrolling(platforms,environmentScrollingSpeed);
-  environmentScrolling(objects,environmentScrollingSpeed);
+  environmentScrolling(bricks,environmentScrollingSpeed);
   environmentScrolling(clouds,environmentScrollingSpeed*0.5);
   environmentScrolling(mountains,environmentScrollingSpeed*0.3); 
   environmentScrolling(pipes,environmentScrollingSpeed); 
-  environmentScrolling(mushrooms,environmentScrollingSpeed); 
+  environmentScrolling(enemyMushrooms,environmentScrollingSpeed); 
   environmentScrolling(coins,environmentScrollingSpeed); 
 
 
@@ -437,28 +423,28 @@ function environmentScrolling(group,environmentScrollingSpeed){
     if(element.position.x>-50){
       element.position.x-=environmentScrollingSpeed;
     }else{
-      element.position.x=screenX+50;
+      element.position.x=innerGameStatus.screenX+50;
       
       //if group is bricks, randomize its y position
-      if(group===objects){
-        element.position.y=random(screenY*0.35,screenY*0.75);
+      if(group===bricks){
+        element.position.y=random(innerGameStatus.screenY*0.35,innerGameStatus.screenY*0.75);
       }
 
       //if group is bricks or mountains, randomize its x position
       if(group===pipes||group===mountains){
-        element.position.x=random(50,screenX)+screenX;
+        element.position.x=random(50,innerGameStatus.screenX)+innerGameStatus.screenX;
       }
 
       //if group is clouds, randomize its x & y position
       if(group===clouds){
-        element.position.x=random(50,screenX)+screenX;
-        element.position.y=random(0,screenY*0.5);
+        element.position.x=random(50,innerGameStatus.screenX)+innerGameStatus.screenX;
+        element.position.y=random(0,innerGameStatus.screenY*0.5);
         element.scale=random(0.3,1.5);
       }
 
       if(group===coins){
-        element.position.x=random(0,screenX)+screenX;
-        element.position.y=random(screenY*0.2,screenY*0.8);
+        element.position.x=random(0,innerGameStatus.screenX)+innerGameStatus.screenX;
+        element.position.y=random(innerGameStatus.screenY*0.2,innerGameStatus.screenY*0.8);
       }
 
     }
@@ -478,7 +464,7 @@ function debugging(character){
 	strokeWeight(1);
 	fill(255);
 	textSize(12);
-	text(objects.length,20,20);
+	text(bricks.length,20,20);
 	// text("v: "+character.velocity.y,150,20);
 	noFill();
 	// outline(tube01);
@@ -488,7 +474,7 @@ function debugging(character){
 	outline(character);
 
 	pipes.forEach(function(element){ outline(element); });
-  mushrooms.forEach(function(element){ outline(element); });
+  enemyMushrooms.forEach(function(element){ outline(element); });
 
 }
 
@@ -503,24 +489,24 @@ function scores(character){
   text("lives: "+character.liveNumber,20,80);
   if(mario.live==false && mario.liveNumber!=0){
     fill(0,0,0,150);
-    rect(0,0,screenX,screenY);
+    rect(0,0,innerGameStatus.screenX,innerGameStatus.screenY);
 
     
     strokeWeight(7);
     noFill();
     
     stroke(255);
-    ellipse(screenX/2,screenY/2-30,150,150)
+    ellipse(innerGameStatus.screenX/2,innerGameStatus.screenY/2-30,150,150)
 
     stroke("red");
     var ratio=(character.liveNumber/initialLifes);
-    arc(screenX/2,screenY/2-30,150,150, PI+HALF_PI,(PI+HALF_PI)+(TWO_PI*ratio));
+    arc(innerGameStatus.screenX/2,innerGameStatus.screenY/2-30,150,150, PI+HALF_PI,(PI+HALF_PI)+(TWO_PI*ratio));
     fill(255, 255, 255);
     noStroke();
     textAlign(CENTER);
     textSize(40);
-    text(round(character.liveNumber),screenX/2,screenY/2-35);
-    text("lives",screenX/2,screenY/2);
+    text(round(character.liveNumber),innerGameStatus.screenX/2,innerGameStatus.screenY/2-35);
+    text("lives",innerGameStatus.screenX/2,innerGameStatus.screenY/2);
 
     
   }
@@ -528,20 +514,20 @@ function scores(character){
   // if game is over 
   if(mario.live==false && mario.liveNumber==0){
     fill(0,0,0,150);
-    rect(0,0,screenX,screenY);
+    rect(0,0,innerGameStatus.screenX,innerGameStatus.screenY);
 
     fill(255, 255, 255);
     textSize(40);
     textAlign(CENTER);
-    text("GAME OVER", screenX/2, screenY/2+105);
+    text("GAME OVER", innerGameStatus.screenX/2, innerGameStatus.screenY/2+105);
     textSize(40);
-    text(round(character.scores),screenX/2,screenY/2-35);
-    text("points",screenX/2,screenY/2);
+    text(round(character.scores),innerGameStatus.screenX/2,innerGameStatus.screenY/2-35);
+    text("points",innerGameStatus.screenX/2,innerGameStatus.screenY/2);
 
     stroke(255);
     strokeWeight(7);
     noFill();
-    ellipse(screenX/2,screenY/2-30,160,160)
+    ellipse(innerGameStatus.screenX/2,innerGameStatus.screenY/2-30,160,160)
     
   }
 }
