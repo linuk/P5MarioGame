@@ -341,7 +341,6 @@ function dontGetOutOfScreen(character){
 
 /* Make enemy standing on objs */
 
-
 function enemys(enemys){
     enemys.forEach(function(enemy){
 	    positionOfEnemy(enemy);

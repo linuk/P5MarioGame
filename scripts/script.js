@@ -59,7 +59,7 @@ function draw() {
 
 	drawInstialize();
 	playAllMusic(mario);
-  	positionOfCharacter(mario);
+	positionOfCharacter(mario);
 	moveEnvironment(mario);
 
 	enemys(enemyMushrooms);

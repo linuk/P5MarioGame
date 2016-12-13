@@ -12,7 +12,7 @@ var enemyMushroomImage = [ 'imgs/enemy/enemyMushroom01.png','imgs/enemy/enemyMus
 
 
   
-function1 setSprites(){
+function setSprites(){
  
   setSpriteGroups();
   loadStaticObjects( mountains, mountainImages, 6 ,1.5, innerGameStatus.screenX, innerGameStatus.screenY-35, innerGameStatus.screenY-35);
