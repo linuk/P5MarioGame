@@ -6,6 +6,11 @@ var jumpSound,
 	gameoverMusic;
 
 
+function playBGMusic(){
+	backgroundMusic.play();
+	backgroundMusic.played = true;
+}
+
 // loading individual sound file
 function loadingSound(soundName, url){
 
@@ -16,7 +21,6 @@ function loadingSound(soundName, url){
 	return soundName;
 
 };
-
 
 
 function loadingAllSounds(){
@@ -34,12 +38,14 @@ function loadingAllSounds(){
 
 // Stop the old music now playing and play new music 
 function playNewMusic(newMusic, oldMusic){
+
 	if(!newMusic.played){
       oldMusic.stop();
       oldMusic.played=false;
       newMusic.play();
       newMusic.played=true;
     };
+
 };
 
 
@@ -47,9 +53,7 @@ function playNewMusic(newMusic, oldMusic){
 function playAllMusic(character){
 
 	// if character is alive
-	if(character.live && character.liveNumber>0){
-		playNewMusic(backgroundMusic, deadMusic);
-	};
+	if(character.live && character.liveNumber>0) playNewMusic(backgroundMusic, deadMusic);
 
 	// if character is dead but not game over
 	if(!character.live && character.liveNumber>0){
@@ -58,11 +62,7 @@ function playAllMusic(character){
 	};
 
 	// if game is over
-	if(!character.live && character.liveNumber==0){
-		playNewMusic(gameoverMusic, backgroundMusic);
-	};
-
-
+	if(!character.live && character.liveNumber==0) playNewMusic(gameoverMusic, backgroundMusic);
 
 }
 
