@@ -89,7 +89,7 @@ function loadPlatforms() {
 
 
 
-// load mario
+// load Mario animation
 function MarioAnimation(){
   mario=createSprite(gameConfig.startingPoint, 0, gameConfig.startingPoint, 0.30);
   mario.addAnimation("stand",'imgs/mario/mario06.png');

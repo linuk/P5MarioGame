@@ -1,9 +1,4 @@
-var jumpSound, 
-	stompSound,
-	coinSound,
-	backgroundMusic,
-	deadMusic,
-	gameoverMusic;
+var jumpSound, stompSound,coinSound,backgroundMusic,deadMusic,gameoverMusic;
 
 
 function playBGMusic(){
@@ -24,14 +19,12 @@ function loadingSound(soundName, url){
 
 
 function loadingAllSounds(){
-
 	backgroundMusic = loadingSound(backgroundMusic, 'sounds/BG.mp3');
 	deadMusic = loadingSound(deadMusic, 'sounds/dead.wav');
 	gameoverMusic = loadingSound(deadMusic, 'sounds/gameover.wav');
 	jumpSound = loadingSound(jumpSound, 'sounds/jump.wav');	
 	stompSound = loadingSound(stompSound, 'sounds/stomp.wav');
 	coinSound = loadingSound(coinSound, 'sounds/coin.wav')
-
 }
 
 

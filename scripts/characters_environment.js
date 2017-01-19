@@ -20,7 +20,7 @@ var gameConfig={
   status: "start", 
   
   // initial lives of mario
-  initialLifes: 4,
+  initialLifes: 1,
 
   // character moves speed
   moveSpeed: 5,
@@ -56,11 +56,7 @@ function game(){
   instializeInDraw();
   playAllMusic(mario);
   moveEnvironment(mario);
-  enemys(enemyMushrooms);
-  checkStatus(mario);
-
   drawSprites();
-  scores(mario);
   
   if(gameConfig.status==='start'){
     fill(0,0,0,150);
@@ -81,9 +77,14 @@ function game(){
   
   if(gameConfig.status==='play'){
     positionOfCharacter(mario);
-    // autoControl(mario);
+    enemys(enemyMushrooms);
+    checkStatus(mario);
+    scores(mario);
     manualControl(mario);
- 
+  
+    // optional control version of game
+    // autoControl(mario);
+  
   }
 
     // if game is over 
@@ -103,12 +104,11 @@ function game(){
     strokeWeight(7);
     noFill();
     ellipse(gameConfig.screenX/2,gameConfig.screenY/2-30,160,160)
-    changeGameStatud()
   }
 }  
 
 
-
+// change game status if any key is pressed
 function changeGameStatud(){
   if(keyIsPressed && gameConfig.status==="start") gameConfig.status= "play";
 }
@@ -128,24 +128,25 @@ function instializeInSetup(character){
 	frameRate(120);
 	
 	character.scale=0.35;
-	bricks.displace(bricks);
+	
+  bricks.displace(bricks);
 	platforms.displace(platforms);
-  
 	coins.displace(coins);
 	coins.displace(platforms);
 	coins.collide(pipes);
 	coins.displace(bricks);
 		
-	//while killing 	
-	character["killing"]=0;
+  // set up the initial config of character  
+	character["killing"]=0; //while is killing enemy
 	character["kills"]=0;
 	character["live"]=true;
 	character["liveNumber"]=gameConfig.initialLifes;
 	character["status"]='live';
 	character["coins"]=0;
 
+  // change the scale of clouds
 	clouds.forEach(function(element){
-		element.scale=random(1,1.5);
+		element.scale=random(1,2);
 	})
 }
 
@@ -158,30 +159,25 @@ function instializeInDraw(){
   }else{
     mario.killing=0;
   }
-
-  mario.velocity.x=0;
-  mario.maxSpeed=20;
+  
+  // make objects not overlap each other.
   pipes.displace(pipes);
   enemyMushrooms.displace(enemyMushrooms);
   enemyMushrooms.collide(pipes);
   clouds.displace(clouds);
 
-
-  clouds.forEach(function(element){
-    if(element.scale>=1){
-    	element.velocity.x=0.12;
-    }else{
-    	element.velocity.x=0.02;
-    }  
-  })
-
+  // make character not overlap other objects
   if(mario.live){
     bricks.displace(mario);
     pipes.displace(mario);
     enemyMushrooms.displace(mario);
     platforms.displace(mario);
   }
+  
+  // character config initialize
   mario["standOnObj"]=false;
+  mario.velocity.x=0;
+  mario.maxSpeed=20;
 
 }
 
@@ -236,13 +232,13 @@ function positionOfCharacter(character){
       
   }
 
-  // Coins event
+  // Coins interaction event
   coins.forEach(function(element){
     getCoins(element,mario);
     coinVanish(element);
   });
 
-  // EnemyMushrooms event
+  // EnemyMushrooms interaction event
   enemyMushrooms.forEach(function(element){
     StepOnEnemy(character,element);
     die(mario,element);
@@ -250,7 +246,6 @@ function positionOfCharacter(character){
 
   // Make it stay in the screen
   dontGetOutOfScreen(mario);
-  gameConfig.scores=character.coins+character.kills+gameConfig.timeScores;
 
 }
 
@@ -321,6 +316,7 @@ function standOnObjs(obj1,obj2){
 	}
 }
 
+/* See if  obj1 step on obj2 to kill it*/
 function StepOnEnemy(obj1,obj2){
   
 	var obj1_Left=leftSide(obj1);
@@ -333,7 +329,7 @@ function StepOnEnemy(obj1,obj2){
 	var obj2_Up=upSide(obj2);
 	var obj2_Down=downSide(obj2);
 
-	if(obj1_Right>=obj2_Left-2&&obj1_Left<=obj2_Right+2 && obj1_Down<=obj2_Up+7 && obj1_Down>=obj2_Up-7 && obj2.live==true && obj2.touching.top){
+	if(obj1_Right>=obj2_Left&&obj1_Left<=obj2_Right && obj1_Down<=obj2_Up+7 && obj1_Down>=obj2_Up-7 && obj2.live==true && obj2.touching.top){
 		obj2.live=false;
     obj1.killing=30;
     obj1.kills++;
@@ -348,8 +344,8 @@ function StepOnEnemy(obj1,obj2){
 }
 
 
+// make character die if he touched by enemy
 function die(character,enemy){
-
   if((enemy.touching.left||enemy.touching.right)&&character.live&&character.killing===0){
     character.live=false;
     character.liveNumber--;
@@ -360,6 +356,7 @@ function die(character,enemy){
   } 
 }
 
+// check character status and response to sprite and game status
 function checkStatus(character){    
   if(character.live==false){
     character.changeAnimation('dead');
@@ -369,6 +366,7 @@ function checkStatus(character){
   }
 }
 
+// revive after dying music finished
 function reviveAfterMusic(character){
   if( (character.live==false&&mario.liveNumber!=0)){
     character.live=true;
@@ -380,7 +378,7 @@ function reviveAfterMusic(character){
 }
 
 
-/* See if  obj1 stand on obj2, mainly for see if standing on the objcs*/
+/* Make character stay in screen */
 function dontGetOutOfScreen(character){
   
   //die if drop in the holes 
@@ -408,7 +406,6 @@ function dontGetOutOfScreen(character){
 =          Enemy setting and control          =
 =============================================*/
 
-/* Make enemy standing on objs */
 
 function enemys(enemys){
     enemys.forEach(function(enemy){
@@ -418,8 +415,8 @@ function enemys(enemys){
   });
 } 
 
+// Check enemy status
 function stateOfEnemy(enemy){
-	
   if (enemy.live==false||enemy.position.y>gameConfig.screenY+50){
     enemy.position.x=random(gameConfig.screenX*1.5,2*gameConfig.screenX+50);
     enemy.position.y=random(gameConfig.screenY*0.35,gameConfig.screenY*0.75);
@@ -427,6 +424,7 @@ function stateOfEnemy(enemy){
   }
 }
 
+/* Make enemy standing on objs */
 function positionOfEnemy(enemy){
 
 	platforms.forEach(function(element){ enemyStandOnObjs(enemy, element); });
@@ -468,23 +466,24 @@ function enemyStandOnObjs(obj1,obj2){
 =            Environment            =
 ===================================*/
 
+// call all environment scroll functions 
 function moveEnvironment(character){
-  
   var environmentScrollingSpeed=gameConfig.moveSpeed*0.3; 
-  environmentScrolling(platforms,environmentScrollingSpeed);
-  environmentScrolling(bricks,environmentScrollingSpeed);
-  environmentScrolling(clouds,environmentScrollingSpeed*0.5);
-  environmentScrolling(mountains,environmentScrollingSpeed*0.3); 
-  environmentScrolling(pipes,environmentScrollingSpeed); 
-  environmentScrolling(enemyMushrooms,environmentScrollingSpeed); 
-  environmentScrolling(coins,environmentScrollingSpeed); 
-
-
-  character.position.x-=environmentScrollingSpeed;
+  
+  if(gameConfig.status==='play'){
+    environmentScrolling(platforms,environmentScrollingSpeed);
+    environmentScrolling(bricks,environmentScrollingSpeed);
+    environmentScrolling(clouds,environmentScrollingSpeed*0.5);
+    environmentScrolling(mountains,environmentScrollingSpeed*0.3); 
+    environmentScrolling(pipes,environmentScrollingSpeed); 
+    environmentScrolling(coins,environmentScrollingSpeed); 
+    environmentScrolling(enemyMushrooms,environmentScrollingSpeed); 
+    character.position.x-=environmentScrollingSpeed;
+  }
 }
 
+// scroll different element in the screen
 function environmentScrolling(group,environmentScrollingSpeed){
-  
   group.forEach(function(element){
     if(element.position.x>-50){
       element.position.x-=environmentScrollingSpeed;
@@ -544,14 +543,18 @@ function debugging(character){
 
 }
 
+
+// calculate scores of every game
 function scores(character){
 
   strokeWeight(0);
   fill(255, 255, 255, 71);
   textSize(40);
 
+  gameConfig.scores=character.coins+character.kills+gameConfig.timeScores;
 
-  if(character.live) gameConfig.timeScores+=0.05;
+
+  if(character.live&&gameConfig.status==='play') gameConfig.timeScores+=0.05;
   
   text("scores: "+round(gameConfig.scores),20,40);
   text("lives: "+character.liveNumber,20,80);
